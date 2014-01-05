@@ -1,4 +1,4 @@
-$ar_databases = ['activerecord_unittest', 'activerecord_unittest2']
+$ar_databases = ['vagrant']
 $as_vagrant   = 'sudo -u vagrant -H bash -l -c'
 $home         = '/home/vagrant'
 
@@ -85,11 +85,6 @@ class install_postgres {
   package { 'libpq-dev':
     ensure => installed
   }
-
-  package { 'postgresql-contrib':
-    ensure  => installed,
-    require => Class['postgresql::server'],
-  }
 }
 class { 'install_postgres': }
 
@@ -125,7 +120,7 @@ package { 'nodejs':
 
 exec { 'install_rvm':
   command => "${as_vagrant} 'curl -L https://get.rvm.io | bash -s stable'",
-  creates => "${home}/.rvm/bin/rvm",
+  creates => "${home}/.rvm",
   require => Package['curl']
 }
 
@@ -144,3 +139,15 @@ exec { "${as_vagrant} 'gem install bundler --no-rdoc --no-ri'":
   creates => "${home}/.rvm/bin/bundle",
   require => Exec['install_ruby']
 }
+
+exec { "${as_vagrant} 'gem install rails --version=3.2.16 --no-rdoc --no-ri'":
+  creates => "${home}/.rvm/bin/rails",
+  require => Exec['install_ruby']
+}
+
+file {
+  "/home/vagrant/.bash_profile":
+  source => "/vagrant/puppet/files/bash_profile",
+  owner => "vagrant", group => "vagrant", mode => 0664;
+}
+
